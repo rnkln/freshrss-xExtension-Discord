@@ -1,0 +1,38 @@
+<?php
+declare(strict_types=1);
+/** @var DiscordExtension $this */
+?>
+<form action="<?php echo _url('extension', 'configure', 'e', urlencode($this->getName())); ?>" method="post">
+	<input type="hidden" name="_csrf" value="<?php echo FreshRSS_Auth::csrfToken(); ?>" />
+
+	<fieldset>
+		<div class="form-group">
+			<label for="url" class="group-name" >URL *</label>
+			<div class="group-controls">
+				<input id="url" name="url" type="text" value="<?= $this->getSystemConfigurationValue("url") ?>" required>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="username" class="group-name" >Username</label>
+			<div class="group-controls">
+				<input id="username" name="username" type="text" value="<?= $this->getSystemConfigurationValue("username") ?>">
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="avatar_url" class="group-name">Avatar URL</label>
+			<div class="group-controls">
+				<input id="avatar_url" name="avatar_url" type="text" value="<?= $this->getSystemConfigurationValue("avatar_url") ?>">
+			</div>
+		</div>
+	</fieldset>
+
+	<div class="form-group form-actions">
+		<div class="group-controls">
+			<button type="submit" class="btn btn-important"><?= _t('gen.action.submit'); ?></button>
+			<button type="reset" class="btn"><?= _t('gen.action.cancel'); ?></button>
+			<button name="test" type="submit" class="btn"><?= _t('ext.discord.test'); ?></button>
+		</div>
+	</div>
+</form>
