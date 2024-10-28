@@ -3,6 +3,6 @@
 	"type": "system",
 	"author": "rnkln",
 	"description": "Send a Discord message when new article appears",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"entrypoint": "Discord"
 }
