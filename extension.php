@@ -118,7 +118,7 @@ class DiscordExtension extends Minz_Extension {
 		$text = preg_replace("/(  \n){3,}/i", "  \n  \n", $text);
 		$text = preg_replace_callback(
 			'/\\\\u([0-9a-fA-F]{4})/',
-			fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE')
+			fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
 			$text
 		);
 
