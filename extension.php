@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 class DiscordExtension extends Minz_Extension {
 
-		#[\Override]
-		public function init(): void {
-				$this->registerTranslates();
-				$this->registerHook("entry_before_insert", [$this, "handleEntryBeforeInsert"]);
-		}
+    #[\Override]
+    public function init(): void {
+        $this->registerTranslates();
+        $this->registerHook("entry_before_insert", [$this, "handleEntryBeforeInsert"]);
+    }
 
-		public function handleConfigureAction(): void {
-			$this->registerTranslates();
+    public function handleConfigureAction(): void {
+      $this->registerTranslates();
 
 			if (Minz_Request::isPost()) {
 				$now = new DateTime();
@@ -35,10 +35,11 @@ class DiscordExtension extends Minz_Extension {
 					);
 				}
 			}
-	}
+  }
 
 	public function handleEntryBeforeInsert($entry) {
 		$thumbnail = $entry->thumbnail();
+		$description = $this->sanitize($entry->originalContent());
 
 		$this->sendMessage(
 			$this->getSystemConfigurationValue("url"),
@@ -50,7 +51,7 @@ class DiscordExtension extends Minz_Extension {
 						"title" => $entry->title(),
 						"url" => $entry->link(),
 						"color" => 2605643,
-						"description" => strip_tags($entry->originalContent()),
+						"description" => $this->truncate($description, 2000),
 						"timestamp" => (new DateTime('@'. $entry->date(true)/1000))->format(DateTime::ATOM),
 						"author" => [
 							"name" => $entry->feed()->name(),
@@ -92,7 +93,35 @@ class DiscordExtension extends Minz_Extension {
 		} catch (Throwable $err) {
 			Minz_Log::error("[Discord] ❌ " . $err);
 		} finally {
-				curl_close($ch);
+			curl_close($ch);
 		}
+	}
+
+	public function truncate(string $text, int $length = 20): string {
+		if (strlen($text) <= $length) {
+			return $text;
+		}
+
+		$text = substr($text, 0, $length);
+		$text = substr($text, 0, strrpos($text, " "));
+		$text .= "...";
+
+		return $text;
+	}
+
+	public function sanitize(string $text): string {
+		$text = preg_replace("/(>)\s*(<)/i", "$1$2", $text);
+		$text = strip_tags($text, '<br><tr>');
+		$text = preg_replace("/<br\s*\/?>/i", "  \n", $text);
+		$text = preg_replace("/<tr[^>]*>/i", "  \n", $text);
+		$text = preg_replace("/<\/tr[^>]*>/i", "  \n", $text);
+		$text = preg_replace("/(  \n){3,}/i", "  \n  \n", $text);
+		$text = preg_replace_callback(
+			'/\\\\u([0-9a-fA-F]{4})/',
+			fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE')
+			$text
+		);
+
+		return $text;
 	}
 }
