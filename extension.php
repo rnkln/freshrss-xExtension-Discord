@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 class DiscordExtension extends Minz_Extension {
 
-    #[\Override]
-    public function init(): void {
-        $this->registerTranslates();
-        $this->registerHook("entry_before_insert", [$this, "handleEntryBeforeInsert"]);
-    }
+		#[\Override]
+		public function init(): void {
+			$this->registerTranslates();
+			$this->registerHook("entry_before_insert", [$this, "handleEntryBeforeInsert"]);
+		}
 
-    public function handleConfigureAction(): void {
-      $this->registerTranslates();
+		public function handleConfigureAction(): void {
+			$this->registerTranslates();
 
 			if (Minz_Request::isPost()) {
 				$now = new DateTime();
@@ -35,12 +35,9 @@ class DiscordExtension extends Minz_Extension {
 					);
 				}
 			}
-  }
+	}
 
 	public function handleEntryBeforeInsert($entry) {
-		$thumbnail = $entry->thumbnail();
-		$description = $this->sanitize($entry->originalContent());
-
 		$this->sendMessage(
 			$this->getSystemConfigurationValue("url"),
 			$this->getSystemConfigurationValue("username"),
@@ -51,17 +48,16 @@ class DiscordExtension extends Minz_Extension {
 						"title" => $entry->title(),
 						"url" => $entry->link(),
 						"color" => 2605643,
-						"description" => $this->truncate($description, 2000),
+						"description" => $this->truncate($this->markdownify($entry->originalContent()), 2000),
 						"timestamp" => (new DateTime('@'. $entry->date(true)/1000))->format(DateTime::ATOM),
 						"author" => [
 							"name" => $entry->feed()->name(),
-							"icon_url" => $this->getSystemConfigurationValue("avatar_url") // Would love this to be feed icon
+							"icon_url" => $this->favicon($entry->feed()->website())
 						],
-						"thumbnail" => isset($thumbnail) ? [
-							"url" => $thumbnail["url"],
-							"width" => $thumbnail["width"] ?? null,
-							"height" => $thumbnail["height"] ?? null,
-						] : null
+						"footer" => [
+							"text" =>  $this->getSystemConfigurationValue("username"),
+							"icon_url" => $this->getSystemConfigurationValue("avatar_url")
+						]
 					]
 				]
 			]
@@ -97,6 +93,10 @@ class DiscordExtension extends Minz_Extension {
 		}
 	}
 
+	public function favicon(string $url): string {
+		return "https://favicon.im/" . parse_url($url, PHP_URL_HOST);
+	}
+
 	public function truncate(string $text, int $length = 20): string {
 		if (strlen($text) <= $length) {
 			return $text;
@@ -109,43 +109,43 @@ class DiscordExtension extends Minz_Extension {
 		return $text;
 	}
 
-	public function sanitize(string $text): string {
-    // Remove spaces between tags
-    $text = preg_replace("/(>)\s*(<)/i", "$1$2", $text);
+	public function markdownify(string $text): string {
+		// Remove spaces between tags
+		$text = preg_replace("/(>)\s*(<)/i", "$1$2", $text);
 
-    // Allow <br> and <tr> tags, strip all others
-    $text = strip_tags($text, '<br><tr><ul><li><em><strong>');
+		// Allow <br> and <tr> tags, strip all others
+		$text = strip_tags($text, '<br><tr><ul><li><em><strong>');
 
-    // Replace <br> with "  \n"
-    $text = preg_replace("/<br\s*\/?>/i", "  \n", $text);
+		// Replace <br> with "  \n"
+		$text = preg_replace("/<br\s*\/?>/i", "  \n", $text);
 
-    // Replace <tr> and </tr> with "  \n"
-    $text = preg_replace("/<tr[^>]*>/i", "  \n", $text);
-    $text = preg_replace("/<\/tr[^>]*>/i", "  \n", $text);
+		// Replace <tr> and </tr> with "  \n"
+		$text = preg_replace("/<tr[^>]*>/i", "  \n", $text);
+		$text = preg_replace("/<\/tr[^>]*>/i", "  \n", $text);
 
-    // Replace <ul> and </ul> with "  \n"
-    $text = preg_replace("/<\/?ul>/i", "  \n", $text);
+		// Replace <ul> and </ul> with "  \n"
+		$text = preg_replace("/<\/?ul>/i", "  \n", $text);
 
-    // Replace <li> with "- " and </li> with "\n"
-    $text = preg_replace("/<li>/i", "- ", $text);
-    $text = preg_replace("/<\/li>/i", "\n", $text);
+		// Replace <li> with "- " and </li> with "\n"
+		$text = preg_replace("/<li>/i", "- ", $text);
+		$text = preg_replace("/<\/li>/i", "\n", $text);
 
-    // Replace <em> and </em> with "*"
-    $text = preg_replace("/<\/?em>/i", "*", $text);
+		// Replace <em> and </em> with "*"
+		$text = preg_replace("/<\/?em>/i", "*", $text);
 
-    // Replace <strong> and </strong> with "**"
-    $text = preg_replace("/<\/?strong>/i", "**", $text);
+		// Replace <strong> and </strong> with "**"
+		$text = preg_replace("/<\/?strong>/i", "**", $text);
 
-    // Prevent excessive line breaks by replacing three or more with just two
-    $text = preg_replace("/(  \n){3,}/i", "  \n  \n", $text);
+		// Prevent excessive line breaks by replacing three or more with just two
+		$text = preg_replace("/(  \n){3,}/i", "  \n  \n", $text);
 
-    // Convert Unicode characters represented as \uXXXX to UTF-8
-    $text = preg_replace_callback(
-        '/\\\\u([0-9a-fA-F]{4})/',
-        fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
-        $text
-    );
+		// Convert Unicode characters represented as \uXXXX to UTF-8
+		$text = preg_replace_callback(
+				'/\\\\u([0-9a-fA-F]{4})/',
+				fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
+				$text
+		);
 
-    return $text;
+		return $text;
 	}
 }
