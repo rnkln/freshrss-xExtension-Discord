@@ -110,42 +110,77 @@ class DiscordExtension extends Minz_Extension {
 	}
 
 	public function markdownify(string $text): string {
+		$eol = "\n";
+		$nl = "  " . $eol;
+		$break = $nl . $nl;
+
 		// Remove spaces between tags
 		$text = preg_replace("/(>)\s*(<)/i", "$1$2", $text);
 
-		// Allow <br> and <tr> tags, strip all others
-		$text = strip_tags($text, '<br><tr><ul><li><em><strong>');
+		// Strip tags unless the have an equivalent markdown syntax
+		$text = strip_tags($text, '<br><h1><h2><h3><p><pre><tr><ul><li><blockquote><em><del><code><strong><a>');
 
-		// Replace <br> with "  \n"
-		$text = preg_replace("/<br\s*\/?>/i", "  \n", $text);
+    // Transform <br>
+		$text = preg_replace("/<br\s*\/?>/i", $nl, $text);
 
-		// Replace <tr> and </tr> with "  \n"
-		$text = preg_replace("/<tr[^>]*>/i", "  \n", $text);
-		$text = preg_replace("/<\/tr[^>]*>/i", "  \n", $text);
+		// Transform <h1>
+		$text = preg_replace("/<h1[^>]*>(.*?)<\/h1>/i", "{$break}# $1{$break}", $text);
 
-		// Replace <ul> and </ul> with "  \n"
-		$text = preg_replace("/<\/?ul>/i", "  \n", $text);
+		// Transform <h2>
+		$text = preg_replace("/<h2[^>]*>(.*?)<\/h2>/i", "{$break}## $1{$break}", $text);
 
-		// Replace <li> with "- " and </li> with "\n"
-		$text = preg_replace("/<li>/i", "- ", $text);
-		$text = preg_replace("/<\/li>/i", "\n", $text);
+		// Transform <h3>
+		$text = preg_replace("/<h3[^>]*>(.*?)<\/h3>/i", "{$break}## $1{$break}", $text);
 
-		// Replace <em> and </em> with "*"
-		$text = preg_replace("/<\/?em>/i", "*", $text);
+		// Transform <p>
+		$text = preg_replace("/<p[^>]*>(.*?)<\/p>/i", "{$break}$1{$break}", $text);
 
-		// Replace <strong> and </strong> with "**"
-		$text = preg_replace("/<\/?strong>/i", "**", $text);
+		// Transform <pre>
+		$text = preg_replace("/<pre[^>]*>(.*?)<\/pre>/i", "{$break}```{$eol}$1{$eol}```{$break}", $text);
 
-		// Prevent excessive line breaks by replacing three or more with just two
-		$text = preg_replace("/(  \n){3,}/i", "  \n  \n", $text);
+		// Transform <tr>
+		$text = preg_replace("/<tr[^>]*>(.*?)<\/tr>/i", "{$break}$1{$break}", $text);
 
-		// Convert Unicode characters represented as \uXXXX to UTF-8
+    // Transform <ul>
+		$text = preg_replace("/<ul[^>]*>(.*?)<\/ul>/i", "{$break}$1{$break}", $text);
+
+    // Transform <li>
+		$text = preg_replace("/<li[^>]*>(.*?)<\/li>/i", "- $1{$eol}", $text);
+
+		// Transform <blockquote>
+		$text = preg_replace("/<blockquote[^>]*>(.*?)<\/blockquote>/is", "{$break}> $1{$break}", $text);
+
+    // Transform <em>
+		$text = preg_replace("/<em[^>]*>(.*?)<\/em>/i", "*$1*", $text);
+
+		// Transform <del>
+		$text = preg_replace("/<del[^>]*>(.*?)<\/del>/i", "~~$1~~", $text);
+
+		// Transform <code>
+		$text = preg_replace("/<code[^>]*>(.*?)<\/code>/is", "`$1`", $text);
+
+    // Transform <strong>
+		$text = preg_replace("/<strong[^>]*>(.*?)<\/strong>/i", "**$1**", $text);
+
+		// Transform <a>
 		$text = preg_replace_callback(
-				'/\\\\u([0-9a-fA-F]{4})/',
-				fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
-				$text
+			"/<a\s+href=['\"](.*?)['\"][^>]*>(.*?)<\/a>/i",
+			fn($matches) => "[{$matches[2]}]({$matches[1]})",
+			$text
 		);
 
-		return $text;
+    // Convert Unicode characters represented as \uXXXX to UTF-8
+    $text = preg_replace_callback(
+        '/\\\\u([0-9a-fA-F]{4})/',
+        fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
+        $text
+    );
+
+		// Prevent excessive line breaks
+		$text = preg_replace("/^\s+/i", '', $text);
+		$text = preg_replace("/\s+$/i", '', $text);
+		$text = preg_replace("/(\s*\n\s*\n)+/i", $break, $text);
+
+    return $text;
 	}
 }
