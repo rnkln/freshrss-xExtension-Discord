@@ -114,8 +114,20 @@ class DiscordExtension extends Minz_Extension {
 		$nl = "  " . $eol;
 		$break = $nl . $nl;
 
-		// Remove spaces between tags
-		$text = preg_replace("/(>)\s*(<)/i", "$1$2", $text);
+		// Remove white space between tags
+		$text = preg_replace("/>\s+</i", "><", $text);
+
+		// Remove white space after tag start
+		$text = preg_replace("/<\s+/", '<', $text);
+
+		// Remove white space before tag close
+		$text = preg_replace("/\s+>/", '>', $text);
+
+		// Remove excessive white space
+		$text = preg_replace("/\s+/", ' ', $text);
+
+		// remove comments
+		$text = preg_replace('/<!--([^-](?!(->)))*-->/', '', $text);
 
 		// Strip tags unless the have an equivalent markdown syntax
 		$text = strip_tags($text, '<br><h1><h2><h3><p><pre><tr><ul><li><blockquote><em><del><code><strong><a>');
@@ -176,9 +188,16 @@ class DiscordExtension extends Minz_Extension {
         $text
     );
 
-		// Prevent excessive line breaks
-		$text = preg_replace("/^\s+/i", '', $text);
+		// Trim end
 		$text = preg_replace("/\s+$/i", '', $text);
+
+		// Trim start
+		$text = preg_replace("/^\s+/i", '', $text);
+
+		// Trim start of lines
+		$text = preg_replace("/^ +/im", '', $text);
+
+		// Trim excessive line breaks
 		$text = preg_replace("/(\s*\n\s*\n)+/i", $break, $text);
 
     return $text;
