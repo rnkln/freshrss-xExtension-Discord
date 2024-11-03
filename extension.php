@@ -132,7 +132,7 @@ class DiscordExtension extends Minz_Extension {
 		// Strip tags unless the have an equivalent markdown syntax
 		$text = strip_tags($text, '<br><h1><h2><h3><p><pre><tr><ul><li><blockquote><em><del><code><strong><a>');
 
-    // Transform <br>
+		// Transform <br>
 		$text = preg_replace("/<br\s*\/?>/i", $nl, $text);
 
 		// Transform <h1>
@@ -153,16 +153,16 @@ class DiscordExtension extends Minz_Extension {
 		// Transform <tr>
 		$text = preg_replace("/<tr[^>]*>(.*?)<\/tr>/i", "{$break}$1{$break}", $text);
 
-    // Transform <ul>
+		// Transform <ul>
 		$text = preg_replace("/<ul[^>]*>(.*?)<\/ul>/i", "{$break}$1{$break}", $text);
 
-    // Transform <li>
+		// Transform <li>
 		$text = preg_replace("/<li[^>]*>(.*?)<\/li>/i", "- $1{$eol}", $text);
 
 		// Transform <blockquote>
 		$text = preg_replace("/<blockquote[^>]*>(.*?)<\/blockquote>/is", "{$break}> $1{$break}", $text);
 
-    // Transform <em>
+		// Transform <em>
 		$text = preg_replace("/<em[^>]*>(.*?)<\/em>/i", "*$1*", $text);
 
 		// Transform <del>
@@ -171,7 +171,7 @@ class DiscordExtension extends Minz_Extension {
 		// Transform <code>
 		$text = preg_replace("/<code[^>]*>(.*?)<\/code>/is", "`$1`", $text);
 
-    // Transform <strong>
+		// Transform <strong>
 		$text = preg_replace("/<strong[^>]*>(.*?)<\/strong>/i", "**$1**", $text);
 
 		// Transform <a>
@@ -181,12 +181,12 @@ class DiscordExtension extends Minz_Extension {
 			$text
 		);
 
-    // Convert Unicode characters represented as \uXXXX to UTF-8
-    $text = preg_replace_callback(
-        '/\\\\u([0-9a-fA-F]{4})/',
-        fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
-        $text
-    );
+		// Convert Unicode characters represented as \uXXXX to UTF-8
+		$text = preg_replace_callback(
+			'/\\\\u([0-9a-fA-F]{4})/',
+			fn($matches) => mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UTF-16BE'),
+			$text
+		);
 
 		// Trim end
 		$text = preg_replace("/\s+$/i", '', $text);
@@ -200,6 +200,6 @@ class DiscordExtension extends Minz_Extension {
 		// Trim excessive line breaks
 		$text = preg_replace("/(\s*\n\s*\n)+/i", $break, $text);
 
-    return $text;
+		return $text;
 	}
 }
