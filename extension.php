@@ -7,7 +7,7 @@ class DiscordExtension extends Minz_Extension {
 		#[\Override]
 		public function init(): void {
 			$this->registerTranslates();
-			$this->registerHook("entry_before_insert", [$this, "handleEntryBeforeInsert"]);
+			$this->registerHook("entry_before_add", [$this, "handleEntryBeforeAdd"]);
 		}
 
 		public function handleConfigureAction(): void {
@@ -37,31 +37,33 @@ class DiscordExtension extends Minz_Extension {
 			}
 	}
 
-	public function handleEntryBeforeInsert($entry) {
-		$this->sendMessage(
-			$this->getSystemConfigurationValue("url"),
-			$this->getSystemConfigurationValue("username"),
-			$this->getSystemConfigurationValue("avatar_url"),
-			[
-				"embeds" => [
-					[
-						"title" => $entry->title(),
-						"url" => $entry->link(),
-						"color" => 2605643,
-						"description" => $this->truncate($this->markdownify($entry->originalContent()), 2000),
-						"timestamp" => (new DateTime('@'. $entry->date(true)/1000))->format(DateTime::ATOM),
-						"author" => [
-							"name" => $entry->feed()->name(),
-							"icon_url" => $this->favicon($entry->feed()->website())
-						],
-						"footer" => [
-							"text" =>  $this->getSystemConfigurationValue("username"),
-							"icon_url" => $this->getSystemConfigurationValue("avatar_url")
+	public function handleEntryBeforeAdd($entry) {
+		if(!$entry->isRead()) {
+			$this->sendMessage(
+				$this->getSystemConfigurationValue("url"),
+				$this->getSystemConfigurationValue("username"),
+				$this->getSystemConfigurationValue("avatar_url"),
+				[
+					"embeds" => [
+						[
+							"title" => $entry->title(),
+							"url" => $entry->link(),
+							"color" => 2605643,
+							"description" => $this->truncate($this->markdownify($entry->originalContent()), 2000),
+							"timestamp" => (new DateTime('@'. $entry->date(true)/1000))->format(DateTime::ATOM),
+							"author" => [
+								"name" => $entry->feed()->name(),
+								"icon_url" => $this->favicon($entry->feed()->website())
+							],
+							"footer" => [
+								"text" =>  $this->getSystemConfigurationValue("username"),
+								"icon_url" => $this->getSystemConfigurationValue("avatar_url")
+							]
 						]
 					]
 				]
-			]
-		);
+			);
+		}
 
 		return $entry;
 	}
