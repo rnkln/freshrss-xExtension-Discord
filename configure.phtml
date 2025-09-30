@@ -26,6 +26,13 @@ declare(strict_types=1);
 				<input id="avatar_url" name="avatar_url" type="text" value="<?= $this->getSystemConfigurationValue("avatar_url") ?>">
 			</div>
 		</div>
+
+		<div class="form-group">
+			<label for="ignore_autoread" class="group-name">Ignore autoread</label>
+			<div class="group-controls">
+				<input id="ignore_autoread" name="ignore_autoread" type="checkbox" <?= $this->getSystemConfigurationValue("ignore_autoread", false) ? 'checked' : '' ?>>
+			</div>
+		</div>
 	</fieldset>
 
 	<div class="form-group form-actions">

@@ -19,7 +19,8 @@ class DiscordExtension extends Minz_Extension {
 				$config = [
 					"url" => Minz_Request::paramString("url"),
 					"username" => Minz_Request::paramString("username"),
-					"avatar_url" => Minz_Request::paramString("avatar_url")
+					"avatar_url" => Minz_Request::paramString("avatar_url"),
+					"ignore_autoread" => Minz_Request::paramBoolean("ignore_autoread")
 				];
 
 				$this->setSystemConfiguration($config);
@@ -38,32 +39,39 @@ class DiscordExtension extends Minz_Extension {
 	}
 
 	public function handleEntryBeforeAdd($entry) {
-		if(!$entry->isRead()) {
-			$this->sendMessage(
-				$this->getSystemConfigurationValue("url"),
-				$this->getSystemConfigurationValue("username"),
-				$this->getSystemConfigurationValue("avatar_url"),
-				[
-					"embeds" => [
-						[
-							"title" => $entry->title(),
-							"url" => $entry->link(),
-							"color" => 2605643,
-							"description" => $this->truncate($this->markdownify($entry->originalContent()), 2000),
-							"timestamp" => (new DateTime('@'. $entry->date(true)/1000))->format(DateTime::ATOM),
-							"author" => [
-								"name" => $entry->feed()->name(),
-								"icon_url" => $this->favicon($entry->feed()->website())
-							],
-							"footer" => [
-								"text" =>  $this->getSystemConfigurationValue("username"),
-								"icon_url" => $this->getSystemConfigurationValue("avatar_url")
-							]
+		$ignoreAutoread = $this->getSystemConfigurationValue("ignore_autoread", false);
+
+		// If ignore_autoread is enabled, skip entries that are automatically marked as read
+		// when they appear, based on the feeds filters actions
+		// https://freshrss.github.io/FreshRSS/en/users/10_filter.html
+		if ($ignoreAutoread && $entry->isRead()) {
+				return $entry;
+		}
+
+		$this->sendMessage(
+			$this->getSystemConfigurationValue("url"),
+			$this->getSystemConfigurationValue("username"),
+			$this->getSystemConfigurationValue("avatar_url"),
+			[
+				"embeds" => [
+					[
+						"title" => $entry->title(),
+						"url" => $entry->link(),
+						"color" => 2605643,
+						"description" => $this->truncate($this->markdownify($entry->originalContent()), 2000),
+						"timestamp" => (new DateTime('@'. $entry->date(true)/1000))->format(DateTime::ATOM),
+						"author" => [
+							"name" => $entry->feed()->name(),
+							"icon_url" => $this->favicon($entry->feed()->website())
+						],
+						"footer" => [
+							"text" =>  $this->getSystemConfigurationValue("username"),
+							"icon_url" => $this->getSystemConfigurationValue("avatar_url")
 						]
 					]
 				]
-			);
-		}
+			]
+		);
 
 		return $entry;
 	}
