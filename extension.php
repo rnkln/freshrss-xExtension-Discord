@@ -7,7 +7,7 @@ class DiscordExtension extends Minz_Extension {
 		#[\Override]
 		public function init(): void {
 			$this->registerTranslates();
-			$this->registerHook("entry_before_insert", [$this, "handleEntryBeforeInsert"]);
+			$this->registerHook("entry_before_add", [$this, "handleEntryBeforeAdd"]);
 		}
 
 		public function handleConfigureAction(): void {
@@ -19,7 +19,8 @@ class DiscordExtension extends Minz_Extension {
 				$config = [
 					"url" => Minz_Request::paramString("url"),
 					"username" => Minz_Request::paramString("username"),
-					"avatar_url" => Minz_Request::paramString("avatar_url")
+					"avatar_url" => Minz_Request::paramString("avatar_url"),
+					"ignore_autoread" => Minz_Request::paramBoolean("ignore_autoread")
 				];
 
 				$this->setSystemConfiguration($config);
@@ -37,7 +38,16 @@ class DiscordExtension extends Minz_Extension {
 			}
 	}
 
-	public function handleEntryBeforeInsert($entry) {
+	public function handleEntryBeforeAdd($entry) {
+		$ignoreAutoread = $this->getSystemConfigurationValue("ignore_autoread", false);
+
+		// If ignore_autoread is enabled, skip entries that are automatically marked as read
+		// when they appear, based on the feeds filters actions
+		// https://freshrss.github.io/FreshRSS/en/users/10_filter.html
+		if ($ignoreAutoread && $entry->isRead()) {
+				return $entry;
+		}
+
 		$this->sendMessage(
 			$this->getSystemConfigurationValue("url"),
 			$this->getSystemConfigurationValue("username"),
