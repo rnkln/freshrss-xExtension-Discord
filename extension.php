@@ -8,9 +8,6 @@ use League\HTMLToMarkdown\HtmlConverter;
 
 class DiscordExtension extends Minz_Extension
 {
-  /** @var string[] URLs or patterns to post directly without embed */
-  protected array $autoEmbeds = ['~youtube\.com~', '~youtu\.be~', '~vimeo\.com~'];
-
   #[\Override]
   public function init(): void
   {
