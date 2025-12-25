@@ -3,53 +3,80 @@ declare(strict_types=1);
 /** @var DiscordExtension $this */
 ?>
 <form action="<?php echo _url('extension', 'configure', 'e', urlencode($this->getName())); ?>" method="post">
-  <input type="hidden" name="_csrf" value="<?php echo FreshRSS_Auth::csrfToken(); ?>" />
+	<input type="hidden" name="_csrf" value="<?php echo FreshRSS_Auth::csrfToken(); ?>" />
 
-  <fieldset>
-    <div class="form-group">
-      <label for="url" class="group-name">URL *</label>
-      <div class="group-controls">
-        <input id="url" name="url" type="text" class="w100" value="<?= $this->getSystemConfigurationValue("url") ?>" required>
-      </div>
-    </div>
+	<fieldset>
+		<legend>Webhook</legend>
+		<div class="form-group">
+			<label for="url" class="group-name">URL *</label>
+			<div class="group-controls">
+				<input id="url" name="url" type="text" class="w100" value="<?= $this->getSystemConfigurationValue("url") ?>"
+					required>
+			</div>
+		</div>
 
-    <div class="form-group">
-      <label for="username" class="group-name">Username</label>
-      <div class="group-controls">
-        <input id="username" name="username" type="text" class="w100" value="<?= $this->getSystemConfigurationValue("username") ?>">
-      </div>
-    </div>
+		<div class="form-group">
+			<label for="username" class="group-name">Username</label>
+			<div class="group-controls">
+				<input id="username" name="username" type="text" class="w100"
+					value="<?= $this->getSystemConfigurationValue("username") ?>">
+			</div>
+		</div>
 
-    <div class="form-group">
-      <label for="avatar_url" class="group-name">Avatar URL</label>
-      <div class="group-controls">
-        <input id="avatar_url" name="avatar_url" type="text" class="w100" value="<?= $this->getSystemConfigurationValue("avatar_url") ?>">
-      </div>
-    </div>
+		<div class="form-group">
+			<label for="avatar_url" class="group-name">Avatar URL</label>
+			<div class="group-controls">
+				<input id="avatar_url" name="avatar_url" type="text" class="w100"
+					value="<?= $this->getSystemConfigurationValue("avatar_url") ?>">
+			</div>
+		</div>
 
-    <div class="form-group">
-      <div class="group-controls">
-        <label class="checkbox" for="ignore_autoread">
-          <input id="ignore_autoread" name="ignore_autoread" type="checkbox" <?= $this->getSystemConfigurationValue("ignore_autoread", false) ? 'checked' : '' ?>>
-          <span title="Skips sending a notification when an article is marked autoread by filter actions">Skip when autoread</span>
-        </label>
-      </div>
-    </div>
+		<div class="form-group form-actions">
+			<div class="group-controls">
+				<button type="submit" class="btn btn-important"><?= _t('gen.action.submit'); ?></button>
+				<button type="reset" class="btn"><?= _t('gen.action.cancel'); ?></button>
+				<button name="test" type="submit" class="btn"><?= _t('ext.discord.test'); ?></button>
+			</div>
+		</div>
+	</fieldset>
 
-    <div class="form-group">
-      <label for="embed_as_link_patterns" class="group-name">Embed as link ...</label>
-      <div class="group-controls">
-        <textarea id="embed_as_link_patterns" name="embed_as_link_patterns" class="w100" placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("embed_as_link_patterns", "") ?></textarea>
-        <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Write one search filter per line. Operators <a href="https://freshrss.github.io/FreshRSS/en/users/10_filter.html#with-the-search-field" target="_blank">see documentation</a>.</p>
-      </div>
-    </div>
-  </fieldset>
+	<fieldset>
+		<legend>Behaviour</legend>
+		<div class="form-group">
+			<div class="group-controls">
+				<label class="checkbox" for="ignore_autoread">
+					<input id="ignore_autoread" name="ignore_autoread" type="checkbox"
+						<?= $this->getSystemConfigurationValue("ignore_autoread", false) ? 'checked' : '' ?>>
+					<span>Skip when autoread</span>
+				</label>
+				<p class="help">Skips sending a notification when an article is marked autoread by filter actions.</p>
+			</div>
+		</div>
 
-  <div class="form-group form-actions">
-    <div class="group-controls">
-      <button type="submit" class="btn btn-important"><?= _t('gen.action.submit'); ?></button>
-      <button type="reset" class="btn"><?= _t('gen.action.cancel'); ?></button>
-      <button name="test" type="submit" class="btn"><?= _t('ext.discord.test'); ?></button>
-    </div>
-  </div>
+		<div class="form-group">
+			<label for="category_filter_patterns" class="group-name">Categories filter ...</label>
+			<div class="group-controls">
+				<textarea id="category_filter_patterns" name="category_filter_patterns" class="w100"
+					placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("category_filter_patterns", "") ?></textarea>
+				<p class="help">Articles with a matching category will trigger a notification, others will be skipped.</p>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="embed_as_link_patterns" class="group-name">Embed as link ...</label>
+			<div class="group-controls">
+				<textarea id="embed_as_link_patterns" name="embed_as_link_patterns" class="w100"
+					placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("embed_as_link_patterns", "") ?></textarea>
+				<p class="help">Articles with a matching url will be sent as embed link, allowing videos to play directly in
+					discord.</p>
+			</div>
+		</div>
+
+		<div class="form-group form-actions">
+			<div class="group-controls">
+				<button type="submit" class="btn btn-important"><?= _t('gen.action.submit'); ?></button>
+				<button type="reset" class="btn"><?= _t('gen.action.cancel'); ?></button>
+			</div>
+		</div>
+	</fieldset>
 </form>
