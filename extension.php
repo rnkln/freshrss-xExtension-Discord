@@ -58,7 +58,7 @@ class DiscordExtension extends Minz_Extension
 		}
 	}
 
-	public function handleEntryBeforeAdd($entry)
+	public function handleEntryBeforeAdd(FreshRSS_Entry $entry)
 	{
 		if (
 			!$this->shouldSendBasedOnRead($entry) ||
@@ -122,7 +122,7 @@ class DiscordExtension extends Minz_Extension
 		return $entry;
 	}
 
-	private function shouldSendBasedOnRead($entry): bool
+	private function shouldSendBasedOnRead(FreshRSS_Entry $entry): bool
 	{
 		$config = $this->getSystemConfigurationValue("ignore_autoread", false);
 
@@ -134,32 +134,26 @@ class DiscordExtension extends Minz_Extension
 		return true;
 	}
 
-	private function shouldSendBasedOnCategories($entry): bool
+	private function shouldSendBasedOnCategories(FreshRSS_Entry $entry): bool
 	{
-		$categories = $entry->categories();
+		$feed = $entry->feed();
+		$name = $feed->category()?->name() ?: 'Uncategorized'; // The default category is named "Uncategorized" if none is set
 		$config = $this->getSystemConfigurationValue(
 			"category_filter_patterns",
 			""
 		);
 		$patterns = $this->patterns($config);
 
-		// No patterns or no categories → allow
-		if (empty($patterns) || empty($categories)) {
-			return true;
-		}
-
-		foreach ($categories as $category) {
-			foreach ($patterns as $pattern) {
-				if (@preg_match($pattern, $category->label())) {
-					return false; // at least one match → block
-				}
+		foreach ($patterns as $pattern) {
+			if (@preg_match($pattern, $name)) {
+				return false; // at least one match → block
 			}
 		}
 
-		return true; // no patterns matched → allow
+		return true;
 	}
 
-	private function shouldEmbedAsLink($entry): bool
+	private function shouldEmbedAsLink(FreshRSS_Entry $entry): bool
 	{
 		$url = $entry->link();
 		$config = $this->getSystemConfigurationValue(
@@ -228,5 +222,13 @@ class DiscordExtension extends Minz_Extension
 		$text = substr($text, 0, $length);
 		$text = substr($text, 0, strrpos($text, " "));
 		return $text . "...";
+	}
+
+	public function debug(mixed $any): void
+	{
+		$file = __DIR__ . "/debug.txt";
+
+		file_put_contents($file, print_r($any, true), FILE_APPEND);
+		file_put_contents($file, "\n----------------------\n\n", FILE_APPEND);
 	}
 }
