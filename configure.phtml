@@ -49,16 +49,16 @@ declare(strict_types=1);
 						<?= $this->getSystemConfigurationValue("ignore_autoread", false) ? 'checked' : '' ?>>
 					<span>Skip when autoread</span>
 				</label>
-				<p class="help">Skips sending a notification when an article is marked autoread by filter actions.</p>
+				<p class="help">Articles marked as read automatically will not trigger notifications.</p>
 			</div>
 		</div>
 
 		<div class="form-group">
-			<label for="category_filter_patterns" class="group-name">Categories filter ...</label>
+			<label for="category_filter_patterns" class="group-name">Skip for categories ...</label>
 			<div class="group-controls">
 				<textarea id="category_filter_patterns" name="category_filter_patterns" class="w100"
 					placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("category_filter_patterns", "") ?></textarea>
-				<p class="help">Articles with a matching category will trigger a notification, others will be skipped.</p>
+				<p class="help">Articles with matching categories will not trigger notifications.</p>
 			</div>
 		</div>
 

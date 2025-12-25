@@ -151,12 +151,12 @@ class DiscordExtension extends Minz_Extension
 		foreach ($categories as $category) {
 			foreach ($patterns as $pattern) {
 				if (@preg_match($pattern, $category->label())) {
-					return true; // at least one match → allow
+					return false; // at least one match → block
 				}
 			}
 		}
 
-		return false; // categories exist but none matched
+		return true; // no patterns matched → allow
 	}
 
 	private function shouldEmbedAsLink($entry): bool
