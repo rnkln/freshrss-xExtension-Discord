@@ -89,7 +89,7 @@ class DiscordExtension extends Minz_Extension
 					4000
 				),
 				"timestamp" => (new DateTime(
-					"@" . $entry->date(true) / 1000
+					"@" . $entry->date(true)
 				))->format(DateTime::ATOM),
 				"author" => [
 					"name" => $entry->feed()->name(),
